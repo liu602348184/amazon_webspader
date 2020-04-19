@@ -1,0 +1,26 @@
+{
+  "name": "amazon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "task.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liu602348184/amazon_webspader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/liu602348184/amazon_webspader/issues"
+  },
+  "homepage": "https://github.com/liu602348184/amazon_webspader#readme",
+  "dependencies": {
+    "jquery": "^3.5.0",
+    "jsdom": "^16.2.2",
+    "node-html-parser": "^1.2.16",
+    "play-sound": "^1.1.3",
+    "zlib": "^1.0.5"
+  }
+}
