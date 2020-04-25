@@ -4,12 +4,13 @@ const {parse} = require('node-html-parser')
 const { JSDOM } = require("jsdom")
 const jquery = require( "jquery" )
 const zlib = require('zlib')
-const playSound = require('play-sound')(opts = {})
+const mail = require('./mail')
+const playSound = require('play-sound')(opts = { player: "C:\/MPlayer_Windows\/mplayer\/MPlayer.exe"})
 var crypto = require('crypto');
 // var content = '123456';
 // var result = crypto.createHash('md5').update(content).digest("hex")
 // console.log(result);  //e10adc3949ba59abbe56e057f20f883e
-const AMAZON_URL = 'https://www.amazon.cn/s?k=switch&i=videogames&rh=n%3A897415051%2Cn%3A1895872071%2Cp_89%3ANintendo+%E4%BB%BB%E5%A4%A9%E5%A0%82%2Cp_n_special_merchandising_browse-bin%3A1414288071&s=date-desc-rank&dc&__mk_zh_CN=%E4%BA%9A%E9%A9%AC%E9%80%8A%E7%BD%91%E7%AB%99&qid=1587140234&rnid=1812067071&ref=sr_st_date-desc-rank'
+const AMAZON_URL = 'https://www.amazon.cn/s?k=switch&i=videogames&rh=n%3A897415051%2Cn%3A1895872071%2Cp_n_special_merchandising_browse-bin%3A1414288071&s=date-desc-rank&dc&qid=1587468357&rnid=2122563051&ref=sr_st_date-desc-rank'
 const MD5_LIST = [
   'ee895682d07d7fb6dbcf3758762e50ba',
   'aba0cd239f55e771e072d26108cd96a9',
@@ -25,7 +26,14 @@ const MD5_LIST = [
   'b7ae7f488c98f5dad4b3782d43399ffa',
   '961f02f43579ffc0c2c07e1afb0787d3',
   'ed6503c1b8d884f8078c7ea27807f71a',
+  'a1e410e043e80ecfcb0b2879403b4728',
+  'e1e364873d8e088e1cff5bcb9d0ccdc6',
+  '0063f8aa3f43bc6115ef913dcfd382a4',
+  'd41d8cd98f00b204e9800998ecf8427e',
 ]
+
+const MAX_ALARM_TIMES = 6
+let alramTimes = 0
 
 function compare(body) {
   // console.error(body)
@@ -42,12 +50,28 @@ function compare(body) {
   // md5Str += 'a'
   // console.error(md5Str)
   if(MD5_LIST.indexOf(md5Str) === -1) {
-      console.error(md5Str)
-      playSound.play('./warn.mp3')
-      // console.error('>>>>>>>>>>>>>>>>>>>>>\n\n\n\n\n\n\n>>>>>>>>>>>>')
-      console.error(arr)
+    alramTimes += 1
+
+    if (alramTimes > MAX_ALARM_TIMES) {
+      alramTimes = 0
+      MD5_LIST.push(md5Str)
+      return
+    }
+
+    console.error(md5Str)
+    mail.send(arr.join('\n'))
+    alram()
+    // console.error('>>>>>>>>>>>>>>>>>>>>>\n\n\n\n\n\n\n>>>>>>>>>>>>')
+    console.error(arr)
   }
   // console.error("pro len: ",list.length)
+}
+
+function alram() {
+  playSound.play(process.cwd() + '\\warn.mp3', function(err){
+    if (err) console.error(err)
+    // console.error('done')
+  })
 }
 
 function task() {
@@ -62,7 +86,7 @@ function task() {
     'Cookie': 'session-id=459-6511256-0741311; ubid-acbcn=461-9656925-9904626; s_pers=%20s_fid%3D4F45A9AE6AFA3AF8-05EA0557F4DBD180%7C1744789792235%3B%20s_dl%3D1%7C1587025192236%3B%20gpv_page%3DCN%253AAS%253AGS-homepage%7C1587025192239%3B%20s_ev15%3D%255B%255B%2527NSBaidu%2527%252C%25271587023369749%2527%255D%252C%255B%2527SECNSOAbaidupc2398%2527%252C%25271587023392246%2527%255D%255D%7C1744789792246%3B; i18n-prefs=CNY; x-wl-uid=1Cn7gDYamB1FeFgdWwWZUiuAvCmEID52SNerAuvIreFZRZF/VVlVIpR1pEhB6rUscgTTusqA4wvA=; lc-acbcn=zh_CN; session-token=ZkhgJGRTyr+32geAvystyqLq9ySXtV4CcC6cylXLn1K7MGoD1vdaVmiw9+CVNVHLZ/hFVhixVRozVHNnB63H7LM5n0Gs9YU2BDUv1G5xdciDKed3gJtSWPPxY6uiB+Fx5J98HZuoHBY2Yy6gnWRmd4ypEo74B4SQMbT95C9LduerrFfJtKSsJqtId+MPFPDY; SL_GWPT_Show_Hide_tmp=1; SL_wptGlobTipTmp=1; x-amz-captcha-1=1587155042110878; x-amz-captcha-2=g4HHsDJsLzHGWfm7bqDu8w==; csm-hit=tb:s-EGDTNNBGKWW7XT60J7B4|1587147925957&t:1587147926227&adb:adblk_no; session-id-time=2082729601l',
     'Host': 'www.amazon.cn',
     'Pragma': 'no-cache',
-    'Referer': 'https://www.amazon.cn/s?k=switch&i=videogames&rh=n%3A897415051%2Cn%3A1895872071%2Cp_89%3ANintendo+%E4%BB%BB%E5%A4%A9%E5%A0%82%2Cp_n_special_merchandising_browse-bin%3A1414288071&s=date-desc-rank&dc&__mk_zh_CN=%E4%BA%9A%E9%A9%AC%E9%80%8A%E7%BD%91%E7%AB%99&qid=1587140234&rnid=1812067071&ref=sr_st_date-desc-rank',
+    'Referer': 'https://www.amazon.cn/s?k=switch&i=videogames&rh=n%3A897415051%2Cn%3A1895872071%2Cp_n_special_merchandising_browse-bin%3A1414288071&s=date-desc-rank&dc&qid=1587468357&rnid=2122563051&ref=sr_st_date-desc-rank',
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-Dest': 'document',
@@ -77,30 +101,39 @@ function task() {
     encoding : null,
   }
 
-  request.get(options, (err, res, body) => {
-    // res.setEncoding('utf-8')
-    // console.log('状态码:', res.statusCode);
-    // console.log('请求头:', res.headers);
-    // let body = ''
-    // res.on('data', (d) => {
-    //   body += d
-    // });
-    
-    // res.on('end', () => {
-    //   zlib.unzip(body, function(err, buffer) {
-    //     console.error(err)
-    //     // console.log(buffer.toString())
-    //   })
-    //   // console.error(body.toString())
-    //   // compare(body)
-    // })
-    // console.log(body.toString())
-    zlib.unzip(body, function(err, buffer) {
-      compare(buffer.toString())
+  try{
+    request.get(options, (err, res, body) => {
+      // res.setEncoding('utf-8')
+      // console.log('状态码:', res.statusCode);
+      // console.log('请求头:', res.headers);
+      // let body = ''
+      // res.on('data', (d) => {
+      //   body += d
+      // });
+      
+      // res.on('end', () => {
+      //   zlib.unzip(body, function(err, buffer) {
+      //     console.error(err)
+      //     // console.log(buffer.toString())
+      //   })
+      //   // console.error(body.toString())
+      //   // compare(body)
+      // })
+      // console.log(body.toString())
+      if(body){
+        zlib.unzip(body, function(err, buffer) {
+          compare(buffer.toString())
+        })
+      }
+    }).on('error', (e) => {
+      alram()
+      console.error(e);
     })
-  }).on('error', (e) => {
-    console.error(e);
-  })
+  } catch (netERR) {
+    alram()
+    console.error('networkExp:', netERR)
+  }
+
 }
 
 function run(time) {
@@ -110,5 +143,6 @@ function run(time) {
     run(10000)
   }, time)
 }
+
 
 run(3000)
